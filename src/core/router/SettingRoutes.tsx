@@ -71,6 +71,10 @@ const EmailScenarioConfig = lazyLoad(
     import(/* webpackChunkName: 'email-scenario-config' */ '~/pages/settings/EmailScenarioConfig'),
 )
 
+const PinetIntegration = lazyLoad(
+  () => import(/* webpackChunkName: 'stripe-integration' */ '~/pages/settings/PinetIntegration'),
+)
+
 // ----------- Routes -----------
 export const SETTINGS_ROUTE = '/settings'
 export const INVOICE_SETTINGS_ROUTE = `${SETTINGS_ROUTE}/invoice`
@@ -85,6 +89,7 @@ export const GOCARDLESS_INTEGRATION_ROUTE = `${SETTINGS_ROUTE}/integrations/goca
 export const GOCARDLESS_INTEGRATION_OAUTH_CALLBACK_ROUTE = `${SETTINGS_ROUTE}/integrations/gocardless/callback`
 export const GOCARDLESS_INTEGRATION_DETAILS_ROUTE = `${SETTINGS_ROUTE}/integrations/gocardless/:integrationId`
 export const TAX_MANAGEMENT_INTEGRATION_ROUTE = `${SETTINGS_ROUTE}/integrations/lago-tax-management`
+export const PINET_INTEGRATION_ROUTE = `${SETTINGS_ROUTE}/integrations/pinet`
 export const MEMBERS_ROUTE = `${SETTINGS_ROUTE}/members`
 export const EMAILS_SETTINGS_ROUTE = `${SETTINGS_ROUTE}/emails`
 export const EMAILS_SCENARIO_CONFIG_ROUTE = `${SETTINGS_ROUTE}/emails/config/:type`
@@ -170,5 +175,10 @@ export const settingRoutes: CustomRouteObject[] = [
     path: EMAILS_SCENARIO_CONFIG_ROUTE,
     private: true,
     element: <EmailScenarioConfig />,
+  },
+  {
+    path: PINET_INTEGRATION_ROUTE,
+    private: true,
+    element: <PinetIntegration />,
   },
 ]

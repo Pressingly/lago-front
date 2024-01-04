@@ -41,6 +41,7 @@ gql`
       id
       providerCustomerId
       providerPaymentMethods
+      paymentToken
     }
     metadata {
       id
@@ -266,7 +267,7 @@ export const CustomerMainInfos = ({ loading, customer, onEdit }: CustomerMainInf
       {paymentProvider === ProviderTypeEnum?.Pinet && (
         <div>
           <Typography variant="caption">Payment token</Typography>
-          <Typography color="textSecondary"></Typography>
+          <Typography color="textSecondary">{providerCustomer?.paymentToken}</Typography>
         </div>
       )}
       {!!metadata?.length &&

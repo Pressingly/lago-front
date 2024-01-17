@@ -2791,6 +2791,7 @@ export type PlanCollection = {
 };
 
 export enum PlanInterval {
+  Daily = 'daily',
   Monthly = 'monthly',
   Quarterly = 'quarterly',
   Weekly = 'weekly',

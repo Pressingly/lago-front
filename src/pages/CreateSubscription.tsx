@@ -34,6 +34,7 @@ import {
 import { ChargesSection } from '~/components/plans/ChargesSection'
 import { FixedFeeSection } from '~/components/plans/FixedFeeSection'
 import { PlanSettingsSection } from '~/components/plans/PlanSettingsSection'
+import { LocalChargeInput } from '~/components/plans/types'
 import { PremiumWarningDialog, PremiumWarningDialogRef } from '~/components/PremiumWarningDialog'
 import { WarningDialog, WarningDialogRef } from '~/components/WarningDialog'
 import { dateErrorCodes } from '~/core/constants/form'
@@ -730,7 +731,7 @@ const CreateSubscription = () => {
                     isInSubscriptionForm={isInSubscriptionForm}
                     subscriptionFormType={formType}
                     formikProps={planFormikProps}
-                    alreadyExistingCharges={plan?.charges}
+                    alreadyExistingCharges={plan?.charges as LocalChargeInput[]}
                     editInvoiceDisplayNameRef={editInvoiceDisplayNameRef}
                   />
                 </PlanFormConditionalWrapper>
@@ -832,7 +833,7 @@ const FormPlanWrapper = styled.div`
 const InlineFields = styled.div`
   display: flex;
   gap: ${theme.spacing(6)};
-  align-items: flex-end;
+  align-items: flex-start;
 
   > * {
     flex: 1;

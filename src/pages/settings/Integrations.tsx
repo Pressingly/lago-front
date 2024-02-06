@@ -9,6 +9,10 @@ import {
   AddAdyenDialogRef,
 } from '~/components/settings/integrations/AddAdyenDialog'
 import {
+  AddGocardlessDialog,
+  AddGocardlessDialogRef,
+} from '~/components/settings/integrations/AddGocardlessDialog'
+import {
   AddLagoTaxManagementDialog,
   AddLagoTaxManagementDialogRef,
 } from '~/components/settings/integrations/AddLagoTaxManagementDialog'
@@ -20,7 +24,6 @@ import {
   AddStripeDialog,
   AddStripeDialogRef,
 } from '~/components/settings/integrations/AddStripeDialog'
-import { envGlobalVar } from '~/core/apolloClient'
 import {
   DOCUMENTATION_AIRBYTE,
   DOCUMENTATION_HIGHTTOUCH,
@@ -48,18 +51,28 @@ import Stripe from '~/public/images/stripe.svg'
 import { theme } from '~/styles'
 
 gql`
-  query integrationsSetting {
+  query integrationsSetting($limit: Int) {
     organization {
       id
       euTaxManagement
       country
-      stripePaymentProvider {
-        id
+    }
+
+    paymentProviders(limit: $limit) {
+      collection {
+        ... on StripeProvider {
+          id
+        }
+
+        ... on GocardlessProvider {
+          id
+        }
+
+        ... on AdyenProvider {
+          id
+        }
       }
-      gocardlessPaymentProvider {
-        id
-      }
-      adyenPaymentProvider {
+      pinetPaymentProvider {
         id
       }
       pinetPaymentProvider {
@@ -74,17 +87,27 @@ const Integrations = () => {
   const navigate = useNavigate()
   const addStripeDialogRef = useRef<AddStripeDialogRef>(null)
   const addAdyenDialogRef = useRef<AddAdyenDialogRef>(null)
+  const addGocardlessnDialogRef = useRef<AddGocardlessDialogRef>(null)
   const addPinetDialogRef = useRef<AddPinetDialogRef>(null)
   const addLagoTaxManagementDialog = useRef<AddLagoTaxManagementDialogRef>(null)
-  const { data, loading } = useIntegrationsSettingQuery()
+  const { data, loading } = useIntegrationsSettingQuery({
+    variables: { limit: 1000 },
+  })
 
   const organization = data?.organization
-  const hasAdyenIntegration = !!organization?.adyenPaymentProvider?.id
-  const hasStripeIntegration = !!organization?.stripePaymentProvider?.id
-  const hasGocardlessIntegration = !!organization?.gocardlessPaymentProvider?.id
-  const hasPinetIntegration = !!organization?.pinetPaymentProvider?.id
+  const hasAdyenIntegration = data?.paymentProviders?.collection?.some(
+    (provider) => provider?.__typename === 'AdyenProvider',
+  )
+  const hasStripeIntegration = data?.paymentProviders?.collection?.some(
+    (provider) => provider?.__typename === 'StripeProvider',
+  )
+  const hasGocardlessIntegration = data?.paymentProviders?.collection?.some(
+    (provider) => provider?.__typename === 'GocardlessProvider',
+  )
+  const hasPinetIntegration = data?.paymentProviders?.collection?.some(
+    (provider) => provider?.__typename === 'PinetProvider',
+  )
   const hasTaxManagement = !!organization?.euTaxManagement
-  const { lagoOauthProxyUrl } = envGlobalVar()
 
   return (
     <Page>
@@ -128,7 +151,7 @@ const Integrations = () => {
             title={translate('text_645d071272418a14c1c76a6d')}
             subtitle={translate('text_634ea0ecc6147de10ddb6631')}
             icon={
-              <Avatar variant="connector">
+              <Avatar size="big" variant="connector">
                 <Adyen />
               </Avatar>
             }
@@ -153,7 +176,11 @@ const Integrations = () => {
           <StyledSelector
             title={translate('text_639c334c3fa0e9c6ca3512b2')}
             subtitle={translate('text_639c334c3fa0e9c6ca3512b4')}
-            icon={<Avatar variant="connector">{<Airbyte />}</Avatar>}
+            icon={
+              <Avatar size="big" variant="connector">
+                {<Airbyte />}
+              </Avatar>
+            }
             onClick={() => {
               window.open(DOCUMENTATION_AIRBYTE, '_blank')
             }}
@@ -162,7 +189,11 @@ const Integrations = () => {
           <StyledSelector
             title={translate('text_63e26d8308d03687188221a5')}
             subtitle={translate('text_63e26d8308d03687188221a6')}
-            icon={<Avatar variant="connector">{<Oso />}</Avatar>}
+            icon={
+              <Avatar size="big" variant="connector">
+                {<Oso />}
+              </Avatar>
+            }
             onClick={() => {
               window.open(DOCUMENTATION_OSO, '_blank')
             }}
@@ -172,7 +203,7 @@ const Integrations = () => {
             title={translate('text_634ea0ecc6147de10ddb6625')}
             subtitle={translate('text_634ea0ecc6147de10ddb6631')}
             icon={
-              <Avatar variant="connector">
+              <Avatar size="big" variant="connector">
                 <GoCardless />
               </Avatar>
             }
@@ -185,7 +216,7 @@ const Integrations = () => {
               if (hasGocardlessIntegration) {
                 navigate(GOCARDLESS_INTEGRATION_ROUTE)
               } else {
-                window.open(`${lagoOauthProxyUrl}/gocardless/auth`, '_blank')
+                addGocardlessnDialogRef.current?.openDialog()
               }
             }}
             fullWidth
@@ -193,7 +224,11 @@ const Integrations = () => {
           <StyledSelector
             title={translate('text_641b41f3cec373009a265e9e')}
             subtitle={translate('text_641b41fa604ef10070cab5ea')}
-            icon={<Avatar variant="connector">{<HightTouch />}</Avatar>}
+            icon={
+              <Avatar size="big" variant="connector">
+                {<HightTouch />}
+              </Avatar>
+            }
             onClick={() => {
               window.open(DOCUMENTATION_HIGHTTOUCH, '_blank')
             }}
@@ -203,7 +238,11 @@ const Integrations = () => {
             fullWidth
             title={translate('text_657078c28394d6b1ae1b9713')}
             subtitle={translate('text_657078c28394d6b1ae1b971f')}
-            icon={<Avatar variant="connector">{<LagoTaxManagement />}</Avatar>}
+            icon={
+              <Avatar size="big" variant="connector">
+                {<LagoTaxManagement />}
+              </Avatar>
+            }
             endIcon={
               hasTaxManagement ? (
                 <Chip label={translate('text_634ea0ecc6147de10ddb6646')} />
@@ -213,9 +252,6 @@ const Integrations = () => {
               if (hasTaxManagement) {
                 navigate(TAX_MANAGEMENT_INTEGRATION_ROUTE)
               } else {
-                const element = document.activeElement as HTMLElement
-
-                element.blur && element.blur()
                 addLagoTaxManagementDialog.current?.openDialog()
               }
             }}
@@ -223,7 +259,11 @@ const Integrations = () => {
           <StyledSelector
             title={translate('text_641b42035d62fd004e07cdde')}
             subtitle={translate('text_641b420ccd75240062f2386e')}
-            icon={<Avatar variant="connector">{<Segment />}</Avatar>}
+            icon={
+              <Avatar size="big" variant="connector">
+                {<Segment />}
+              </Avatar>
+            }
             onClick={() => {
               window.open(DOCUMENTATION_SEGMENT, '_blank')
             }}
@@ -233,7 +273,7 @@ const Integrations = () => {
             title={translate('text_62b1edddbf5f461ab971277d')}
             subtitle={translate('text_62b1edddbf5f461ab9712795')}
             icon={
-              <Avatar variant="connector">
+              <Avatar size="big" variant="connector">
                 <Stripe />
               </Avatar>
             }
@@ -259,6 +299,7 @@ const Integrations = () => {
 
       <AddAdyenDialog ref={addAdyenDialogRef} />
       <AddStripeDialog ref={addStripeDialogRef} />
+      <AddGocardlessDialog ref={addGocardlessnDialogRef} />
       <AddLagoTaxManagementDialog
         country={organization?.country}
         ref={addLagoTaxManagementDialog}
@@ -269,6 +310,7 @@ const Integrations = () => {
 }
 
 const Page = styled.div`
+  max-width: 672px;
   padding: ${theme.spacing(8)} ${theme.spacing(12)};
 `
 

@@ -44,7 +44,7 @@ import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { useLocationHistory } from '~/hooks/core/useLocationHistory'
 import { CustomerInvoiceDetailsTabsOptionsEnum } from '~/layouts/CustomerInvoiceDetails'
 import ErrorImage from '~/public/images/maneki/error.svg'
-import { MenuPopper, NAV_HEIGHT, PageHeader, theme } from '~/styles'
+import { MenuPopper, PageHeader, theme } from '~/styles'
 import { SectionHeader } from '~/styles/customer'
 
 import { CustomerDetailsTabsOptions } from './CustomerDetails'
@@ -94,6 +94,7 @@ gql`
           feeType
           itemName
           groupName
+          groupedBy
           invoiceName
           appliedTaxes {
             id
@@ -331,7 +332,7 @@ const CreditNoteDetails = () => {
             </MainInfos>
           ) : (
             <MainInfos>
-              <ConnectorAvatar variant="connector">
+              <ConnectorAvatar size="big" variant="connector">
                 <Icon name="document" color="dark" size="large" />
               </ConnectorAvatar>
               <div>
@@ -403,7 +404,7 @@ const CreditNoteDetails = () => {
               </>
             ) : (
               <InfoSection>
-                <div>
+                <InfoLineWrapper>
                   {creditNote?.customer?.name && (
                     <>
                       <InfoLine>
@@ -461,8 +462,8 @@ const CreditNoteDetails = () => {
                       </Typography>
                     </InfoLine>
                   )}
-                </div>
-                <div>
+                </InfoLineWrapper>
+                <InfoLineWrapper>
                   {!isRefunded && (
                     <InfoLine>
                       <Typography variant="caption" color="grey600" noWrap>
@@ -500,7 +501,7 @@ const CreditNoteDetails = () => {
                       />
                     </Typography>
                   </InfoLine>
-                </div>
+                </InfoLineWrapper>
               </InfoSection>
             )}
 
@@ -522,17 +523,17 @@ const CreditNoteDetails = () => {
                       <thead>
                         <tr>
                           <th>
-                            <Typography variant="bodyHl" color="grey500">
+                            <Typography variant="captionHl" color="grey600">
                               {invoiceDisplayName}
                             </Typography>
                           </th>
                           <th>
-                            <Typography variant="bodyHl" color="grey500">
+                            <Typography variant="captionHl" color="grey600">
                               {translate('text_636bedf292786b19d3398f06')}
                             </Typography>
                           </th>
                           <th>
-                            <Typography variant="bodyHl" color="grey500">
+                            <Typography variant="captionHl" color="grey600">
                               {translate('text_637655cb50f04bf1c8379d12')}
                             </Typography>
                           </th>
@@ -548,12 +549,18 @@ const CreditNoteDetails = () => {
 
                           return charge.map((item, k) => {
                             const isTrueUp = !!item?.fee?.trueUpParentFee?.id
+                            const groupingChain =
+                              Object.values(item?.fee?.groupedBy || {}).length > 0
+                                ? Object.values(item?.fee?.groupedBy)
+                                    .map((group) => (!!group ? ` • ${group}` : ''))
+                                    .join('')
+                                : ''
 
                             return (
                               <React.Fragment key={`groupSubscriptionItem-${i}-list-item-${k}`}>
                                 <tr key={`groupSubscriptionItem-${i}-charge-${j}-item-${k}`}>
                                   <td>
-                                    <Typography variant="body" color="grey700">
+                                    <Typography variant="bodyHl" color="grey700">
                                       {groupDimension === 0 || !!isTrueUp ? (
                                         <>
                                           {item?.fee?.feeType === FeeTypesEnum.AddOn
@@ -562,7 +569,7 @@ const CreditNoteDetails = () => {
                                                 item.fee?.invoiceName ||
                                                 item?.fee?.charge?.billableMetric.name ||
                                                 invoiceDisplayName
-                                              }${
+                                              }${groupingChain}${
                                                 item?.fee?.trueUpParentFee?.id
                                                   ? ` - ${translate(
                                                       'text_64463aaa34904c00a23be4f7',
@@ -577,7 +584,7 @@ const CreditNoteDetails = () => {
                                               ? `${
                                                   item.fee.invoiceName ||
                                                   item.fee.charge?.billableMetric?.name
-                                                }${
+                                                }${groupingChain}${
                                                   item.fee.groupName
                                                     ? ` • ${item.fee.groupName}`
                                                     : item.fee.group?.key
@@ -589,7 +596,7 @@ const CreditNoteDetails = () => {
                                               : `${
                                                   item.fee.invoiceName ||
                                                   item.fee.charge?.billableMetric?.name
-                                                }${
+                                                }${groupingChain}${
                                                   item.fee.groupName
                                                     ? ` • ${item.fee.groupName}`
                                                     : item.fee.group?.value
@@ -920,7 +927,6 @@ const InfoSection = styled.section`
 const InfoLine = styled.div`
   display: flex;
   align-items: flex-start;
-  margin-bottom: ${theme.spacing(2)};
 
   > div:first-child {
     min-width: 140px;
@@ -940,6 +946,12 @@ const InfoLine = styled.div`
   }
 `
 
+const InfoLineWrapper = styled.div`
+  > *:not(:last-child) {
+    margin-bottom: ${theme.spacing(2)};
+  }
+`
+
 const TableSection = styled.section`
   .main-table:not(:first-child) {
     margin-top: ${theme.spacing(10)};
@@ -954,9 +966,11 @@ const TableSection = styled.section`
     > tbody > tr > td {
       overflow: hidden;
       line-break: anywhere;
+      text-align: right;
 
       &:nth-child(1) {
         width: 70%;
+        text-align: left;
       }
       &:nth-child(2) {
         width: 10%;
@@ -964,54 +978,17 @@ const TableSection = styled.section`
       &:nth-child(3) {
         width: 20%;
       }
-    }
 
-    > tfoot > tr > td {
-      &:nth-child(1) {
-        width: 50%;
-      }
-      &:nth-child(2) {
-        width: 35%;
-      }
-      &:nth-child(3) {
-        width: 15%;
-      }
-    }
-
-    > tfoot > tr > td {
-      &:nth-child(2) {
-        text-align: left;
-      }
-    }
-
-    th:not(:last-child),
-    td:not(:last-child) {
-      padding-right: ${theme.spacing(3)};
-    }
-
-    > thead > tr > th,
-    > tbody > tr > td {
-      text-align: right;
-
-      &:first-child {
-        text-align: left;
-      }
-    }
-
-    > tfoot > tr > td {
-      text-align: right;
-      padding: ${theme.spacing(3)} 0;
-    }
-
-    > tfoot > tr > td {
-      &:nth-child(2),
-      &:nth-child(3) {
-        box-shadow: ${theme.shadows[7]};
+      &:not(:last-child) {
+        padding-right: ${theme.spacing(3)};
       }
     }
 
     > thead > tr > th {
-      height: ${NAV_HEIGHT}px;
+      position: sticky;
+      top: 72px;
+      background-color: ${theme.palette.common.white};
+      z-index: 1;
       padding: ${theme.spacing(8)} 0 ${theme.spacing(3)} 0;
       box-sizing: border-box;
       box-shadow: ${theme.shadows[7]};
@@ -1022,6 +999,24 @@ const TableSection = styled.section`
       min-height: 44px;
       padding: ${theme.spacing(3)} 0;
       box-shadow: ${theme.shadows[7]};
+    }
+
+    > tfoot > tr > td {
+      text-align: right;
+      padding: ${theme.spacing(3)} 0;
+
+      &:nth-child(1) {
+        width: 50%;
+      }
+      &:nth-child(2) {
+        width: 35%;
+        box-shadow: ${theme.shadows[7]};
+        text-align: left;
+      }
+      &:nth-child(3) {
+        width: 15%;
+        box-shadow: ${theme.shadows[7]};
+      }
     }
   }
 `

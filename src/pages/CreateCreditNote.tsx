@@ -97,29 +97,6 @@ const CreateCreditNote = () => {
   const { loading, invoice, feesPerInvoice, feeForAddOn, onCreate } = useCreateCreditNote()
   const currency = invoice?.currency || CurrencyEnum.Usd
 
-  // setInterval(() => {
-  //   setPayBackValidation(
-  //     array().of(
-  //       object().shape({
-  //         type: string().required(''),
-  //         value: number()
-  //           .required('')
-  //           .when('type', ([type]) => {
-  //             return type === CreditTypeEnum.refund
-  //               ? number().max(
-  //                   deserializeAmount(Math.round(Math.random() * 1000), currency) || 0,
-  //                   PayBackErrorEnum.maxRefund
-  //                 )
-  //               : number().max(
-  //                   deserializeAmount(Math.round(Math.random() * 1000), currency) || 0,
-  //                   PayBackErrorEnum.maxRefund
-  //                 )
-  //           }),
-  //       })
-  //     )
-  //   )
-  // }, 1000)
-
   const addOnFeesValidation = useMemo(
     () => generateAddOnFeesSchema(feeForAddOn || [], currency),
     [feeForAddOn, currency],
@@ -288,7 +265,7 @@ const CreateCreditNote = () => {
                   <Subtitle>{translate('text_636bedf292786b19d3398ec6')}</Subtitle>
                 </div>
                 <StyledCard>
-                  <Avatar variant="connector">
+                  <Avatar size="big" variant="connector">
                     <Icon name="document" />
                   </Avatar>
 

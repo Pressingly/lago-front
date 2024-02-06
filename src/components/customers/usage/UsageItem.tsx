@@ -45,6 +45,18 @@ gql`
           code
           name
         }
+        groups {
+          id
+        }
+        groupedUsage {
+          amountCents
+          groupedBy
+          eventsCount
+          units
+          groups {
+            id
+          }
+        }
       }
       ...CustomerUsageForUsageDetails
     }
@@ -98,7 +110,7 @@ export const UsageItem = ({
               icon={isOpen ? 'chevron-down' : 'chevron-right'}
             />
           </Tooltip>
-          <StyledAvatar variant="connector">
+          <StyledAvatar size="big" variant="connector">
             <Icon name="pulse" color="dark" />
           </StyledAvatar>
           <Title>
@@ -212,6 +224,13 @@ export const UsageItem = ({
                       )
                     })
                   : data?.customerUsage?.chargesUsage?.map((usage, i) => {
+                      const hasAnyGroupedUsageGroups = usage.groupedUsage.some(
+                        (groupedUsage) => !!groupedUsage?.groups?.length,
+                      )
+                      const hasAnyGroupedUsageUnits = usage.groupedUsage.some(
+                        (groupedUsage) => groupedUsage?.units > 0,
+                      )
+
                       const { billableMetric, charge, units, amountCents } = usage
 
                       return (
@@ -225,7 +244,9 @@ export const UsageItem = ({
                                 {billableMetric?.code}
                               </UsageSubtitle>
                             </div>
-                            {!!usage.groups?.length && (
+                            {(!!usage.groups?.length ||
+                              hasAnyGroupedUsageGroups ||
+                              hasAnyGroupedUsageUnits) && (
                               <Tooltip
                                 title={translate('text_633dae57ca9a923dd53c2135')}
                                 placement="top-end"
@@ -278,7 +299,7 @@ export const UsageItemSkeleton = () => {
   return (
     <SkeletonItem>
       <Button size="small" variant="quaternary" disabled icon="chevron-right" />
-      <Skeleton variant="connectorAvatar" size="medium" marginRight="12px" />
+      <Skeleton variant="connectorAvatar" size="big" marginRight="12px" />
       <div>
         <Skeleton variant="text" width={240} height={12} marginBottom="12px" />
         <Skeleton variant="text" width={120} height={12} />

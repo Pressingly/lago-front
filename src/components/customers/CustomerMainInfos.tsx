@@ -9,6 +9,7 @@ import {
   ProviderPaymentMethodsEnum,
   ProviderTypeEnum,
   TimezoneEnum,
+  useIntegrationsListForCustomerMainInfosQuery,
 } from '~/generated/graphql'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { theme } from '~/styles'
@@ -35,6 +36,7 @@ gql`
     zipcode
     paymentProvider
     timezone
+    paymentProviderCode
     providerCustomer {
       id
       providerCustomerId
@@ -47,6 +49,30 @@ gql`
       value
     }
   }
+
+  query integrationsListForCustomerMainInfos($limit: Int) {
+    paymentProviders(limit: $limit) {
+      collection {
+        ... on StripeProvider {
+          id
+          name
+          code
+        }
+
+        ... on GocardlessProvider {
+          id
+          name
+          code
+        }
+
+        ... on AdyenProvider {
+          id
+          name
+          code
+        }
+      }
+    }
+  }
 `
 
 interface CustomerMainInfosProps {
@@ -57,6 +83,12 @@ interface CustomerMainInfosProps {
 
 export const CustomerMainInfos = ({ loading, customer, onEdit }: CustomerMainInfosProps) => {
   const { translate } = useInternationalization()
+  const { data } = useIntegrationsListForCustomerMainInfosQuery({
+    variables: { limit: 1000 },
+  })
+  const linkedProvider = data?.paymentProviders?.collection?.find(
+    (provider) => provider?.code === customer?.paymentProviderCode,
+  )
 
   if (loading || !customer)
     return (
@@ -164,11 +196,7 @@ export const CustomerMainInfos = ({ loading, customer, onEdit }: CustomerMainInf
       {email && (
         <div>
           <Typography variant="caption">{translate('text_626c0c301a16a600ea061479')}</Typography>
-          {email.split(',').map((mail) => (
-            <Typography key={`customer-email-${mail}`} color="textSecondary" noWrap>
-              {mail}
-            </Typography>
-          ))}
+          <Typography color="textSecondary">{email.split(',').join(', ')}</Typography>
         </div>
       )}
       {url && (
@@ -208,6 +236,13 @@ export const CustomerMainInfos = ({ loading, customer, onEdit }: CustomerMainInf
                     ? 'PINET'
                     : ''}
           </Typography>
+        </div>
+      )}
+      {!!linkedProvider && (
+        <div>
+          <Typography variant="caption">{translate('text_65940198687ce7b05cd62b61')}</Typography>
+          <Typography color="grey700">{linkedProvider?.name}</Typography>
+          <Typography color="grey600">{linkedProvider?.code}</Typography>
         </div>
       )}
       {!!providerCustomer && !!providerCustomer?.providerCustomerId && (

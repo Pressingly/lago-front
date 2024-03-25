@@ -14,6 +14,10 @@ const serializeProperties = (properties: Properties, chargeModel: ChargeModelEnu
 
   return {
     ...properties,
+    ...([ChargeModelEnum.Standard].includes(chargeModel)
+      ? // @ts-ignore EDIT: groupedBy is a string at this stage. need to send string[] to BE
+        { groupedBy: !!properties?.groupedBy ? properties?.groupedBy.split(',') : undefined }
+      : { groupedBy: undefined }),
     ...([ChargeModelEnum.Package, ChargeModelEnum.Standard].includes(chargeModel)
       ? { amount: !!properties?.amount ? String(properties?.amount) : undefined }
       : {}),
@@ -84,12 +88,31 @@ const serializeProperties = (properties: Properties, chargeModel: ChargeModelEnu
 }
 
 export const serializePlanInput = (values: PlanFormInput) => {
-  const { amountCents, trialPeriod, charges, taxes: planTaxes, ...otherValues } = values
+  const {
+    amountCents,
+    trialPeriod,
+    charges,
+    taxes: planTaxes,
+    minimumCommitment,
+    ...otherValues
+  } = values
 
   return {
     amountCents: Number(serializeAmount(amountCents, values.amountCurrency)),
     trialPeriod: Number(trialPeriod || 0),
     taxCodes: planTaxes?.map(({ code }) => code) || [],
+    minimumCommitment:
+      !!minimumCommitment && !!Object.keys(minimumCommitment).length
+        ? {
+            ...minimumCommitment,
+            amountCents: Number(
+              serializeAmount(minimumCommitment.amountCents, values.amountCurrency),
+            ),
+            taxCodes: minimumCommitment.taxes?.map(({ code }) => code) || [],
+            // Reset tax array used for display purpose
+            taxes: undefined,
+          }
+        : {},
     charges: charges.map(
       ({
         billableMetric,

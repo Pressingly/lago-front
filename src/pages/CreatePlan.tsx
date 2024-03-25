@@ -8,9 +8,12 @@ import {
   EditInvoiceDisplayNameRef,
 } from '~/components/invoices/EditInvoiceDisplayName'
 import { ChargesSection } from '~/components/plans/ChargesSection'
+import { CommitmentsSection } from '~/components/plans/CommitmentsSection'
 import { FixedFeeSection } from '~/components/plans/FixedFeeSection'
 import { PlanCodeSnippet } from '~/components/plans/PlanCodeSnippet'
 import { PlanSettingsSection } from '~/components/plans/PlanSettingsSection'
+import { LocalChargeInput } from '~/components/plans/types'
+import { PremiumWarningDialog, PremiumWarningDialogRef } from '~/components/PremiumWarningDialog'
 import { WarningDialog, WarningDialogRef } from '~/components/WarningDialog'
 import { useDuplicatePlanVar } from '~/core/apolloClient'
 import { FORM_TYPE_ENUM } from '~/core/constants/form'
@@ -81,6 +84,15 @@ gql`
     trialPeriod
     subscriptionsCount
     billChargesMonthly
+    minimumCommitment {
+      amountCents
+      commitmentType
+      invoiceDisplayName
+      taxes {
+        id
+        ...TaxForPlanAndChargesInPlanForm
+      }
+    }
     taxes {
       ...TaxForPlanAndChargesInPlanForm
     }
@@ -128,6 +140,7 @@ const CreatePlan = () => {
   const navigate = useNavigate()
   const { translate } = useInternationalization()
   const { type: actionType } = useDuplicatePlanVar()
+  const premiumWarningDialogRef = useRef<PremiumWarningDialogRef>(null)
   const { errorCode, formikProps, isEdition, loading, plan, type } = usePlanForm({})
   const warningDialogRef = useRef<WarningDialogRef>(null)
   const editInvoiceDisplayNameRef = useRef<EditInvoiceDisplayNameRef>(null)
@@ -238,7 +251,14 @@ const CreatePlan = () => {
                   canBeEdited={canBeEdited}
                   isEdition={isEdition}
                   formikProps={formikProps}
-                  alreadyExistingCharges={plan?.charges}
+                  premiumWarningDialogRef={premiumWarningDialogRef}
+                  alreadyExistingCharges={plan?.charges as LocalChargeInput[]}
+                  editInvoiceDisplayNameRef={editInvoiceDisplayNameRef}
+                />
+
+                <CommitmentsSection
+                  formikProps={formikProps}
+                  premiumWarningDialogRef={premiumWarningDialogRef}
                   editInvoiceDisplayNameRef={editInvoiceDisplayNameRef}
                 />
 
@@ -281,6 +301,7 @@ const CreatePlan = () => {
       />
 
       <EditInvoiceDisplayName ref={editInvoiceDisplayNameRef} />
+      <PremiumWarningDialog ref={premiumWarningDialogRef} />
     </div>
   )
 }

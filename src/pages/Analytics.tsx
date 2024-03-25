@@ -20,7 +20,7 @@ import { MenuPopper, PageHeader, theme } from '~/styles'
 
 const Analytics = () => {
   const { translate } = useInternationalization()
-  const { isPremium, currentUser } = useCurrentUser()
+  const { isPremium, currentUser, loading: currentUserDataLoading } = useCurrentUser()
   const { organization, loading: currentOrganizationDataLoading } = useOrganizationInfos()
   const premiumWarningDialogRef = useRef<PremiumWarningDialogRef>(null)
 
@@ -141,10 +141,10 @@ const Analytics = () => {
         <UpgradeBlock>
           <UpgradeBlockLeft>
             <UpgradeBlockLeftFirstLine>
-              <Icon name="sparkles" />
-              <Typography variant="subhead" color="grey700">
+              <Typography variant="bodyHl" color="grey700">
                 {translate('text_6556309ded468200b9debbd4')}
               </Typography>
+              <Icon name="sparkles" />
             </UpgradeBlockLeftFirstLine>
             <Typography variant="caption" color="grey600">
               {translate('text_6556309ded468200b9debbd5')}
@@ -158,7 +158,7 @@ const Analytics = () => {
               premiumWarningDialogRef.current?.openDialog()
             }}
           >
-            {translate('text_6556309ded468200b9debbd6')}
+            {translate('text_65ae73ebe3a66bec2b91d72d')}
           </Button>
         </UpgradeBlock>
       )}
@@ -166,10 +166,11 @@ const Analytics = () => {
       <ContentWrapper>
         <Gross className="analytics-graph" currency={selectedCurrency} period={periodScope} />
         <Mrr
-          demoMode={!isPremium || !currentUser}
-          className="analytics-graph"
           blur={!isPremium || !currentUser}
+          className="analytics-graph"
           currency={selectedCurrency}
+          demoMode={!isPremium || !currentUser}
+          forceLoading={currentUserDataLoading || currentOrganizationDataLoading}
           period={periodScope}
         />
         <Usage
@@ -177,6 +178,7 @@ const Analytics = () => {
           className="analytics-graph"
           blur={!isPremium || !currentUser}
           currency={selectedCurrency}
+          forceLoading={currentUserDataLoading || currentOrganizationDataLoading}
           period={periodScope}
         />
         <Invoices
@@ -184,6 +186,7 @@ const Analytics = () => {
           className="analytics-graph"
           blur={!isPremium || !currentUser}
           currency={selectedCurrency}
+          forceLoading={currentUserDataLoading || currentOrganizationDataLoading}
           period={periodScope}
         />
       </ContentWrapper>
@@ -241,7 +244,6 @@ const UpgradeBlock = styled.div`
 const UpgradeBlockLeft = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${theme.spacing(1)};
 `
 
 const UpgradeBlockLeftFirstLine = styled.div`

@@ -34,7 +34,7 @@ import {
 import { LocalChargeGroupInput, LocalChargeInput, PlanFormInput } from './types'
 
 import { EditInvoiceDisplayNameRef } from '../invoices/EditInvoiceDisplayName'
-import { PremiumWarningDialog, PremiumWarningDialogRef } from '../PremiumWarningDialog'
+import { PremiumWarningDialogRef } from '../PremiumWarningDialog'
 
 const RESULT_LIMIT = 50
 
@@ -76,8 +76,9 @@ gql`
 `
 
 interface ChargesSectionProps {
-  alreadyExistingCharges?: PlanFormInput['charges'] | null
+  alreadyExistingCharges?: LocalChargeInput[] | null
   editInvoiceDisplayNameRef: RefObject<EditInvoiceDisplayNameRef>
+  premiumWarningDialogRef: RefObject<PremiumWarningDialogRef>
   canBeEdited?: boolean
   isInitiallyOpen?: boolean
   isInSubscriptionForm?: boolean
@@ -98,6 +99,7 @@ export const ChargesSection = memo(
     isInSubscriptionForm,
     formikProps,
     isEdition,
+    premiumWarningDialogRef,
     subscriptionFormType,
   }: ChargesSectionProps) => {
     const { translate } = useInternationalization()
@@ -112,9 +114,8 @@ export const ChargesSection = memo(
     const [showAddGroupCharge, setShowAddGroupCharge] = useState(false)
     const newChargeId = useRef<string | null>(null)
     const newChargeGroupId = useRef<string | null>(null)
-    const premiumWarningDialogRef = useRef<PremiumWarningDialogRef>(null)
     const removeChargeWarningDialogRef = useRef<RemoveChargeWarningDialogRef>(null)
-    const alreadyUsedBmsIds = useRef<Map<String, number>>(new Map())
+    const [alreadyUsedBmsIds, setAlreadyUsedBmsIds] = useState<Map<String, number>>(new Map())
     const hasAnyMeteredCharge = useMemo(
       () =>
         formikProps.values.charges.some((c) => {
@@ -239,7 +240,7 @@ export const ChargesSection = memo(
         }
       }
 
-      alreadyUsedBmsIds.current = BmIdsMap
+      setAlreadyUsedBmsIds(BmIdsMap)
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formikProps.values.charges.length])
 
@@ -370,7 +371,7 @@ export const ChargesSection = memo(
                   (chargeFetched) => chargeFetched?.id === charge.id,
                 )
                 const shouldDisplayAlreadyUsedChargeAlert =
-                  (alreadyUsedBmsIds.current.get(charge.billableMetric.id) || 0) > 1
+                  (alreadyUsedBmsIds.get(charge.billableMetric.id) || 0) > 1
 
                 return (
                   <ChargeAccordion
@@ -509,7 +510,7 @@ export const ChargesSection = memo(
                   (chargeFetched) => chargeFetched?.id === charge.id,
                 )
                 const shouldDisplayAlreadyUsedChargeAlert =
-                  (alreadyUsedBmsIds.current.get(charge.billableMetric.id) || 0) > 1
+                  (alreadyUsedBmsIds.get(charge.billableMetric.id) || 0) > 1
 
                 return (
                   <ChargeAccordion
@@ -752,7 +753,6 @@ export const ChargesSection = memo(
         </Card>
 
         <RemoveChargeWarningDialog ref={removeChargeWarningDialogRef} formikProps={formikProps} />
-        <PremiumWarningDialog ref={premiumWarningDialogRef} />
       </>
     )
   },
@@ -813,6 +813,7 @@ const Charges = styled.div`
 
 const InlineButtons = styled.div`
   display: flex;
+  flex-wrap: wrap;
 `
 
 const RecurringSectionTitleWrapper = styled.div<{ $hasAnyAboveSection: boolean }>`

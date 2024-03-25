@@ -28,7 +28,9 @@ gql`
     amountCurrency
     feeType
     invoiceName
+    invoiceDisplayName
     groupName
+    groupedBy
     appliedTaxes {
       id
       tax {
@@ -49,6 +51,7 @@ gql`
       }
     }
     group {
+      id
       key
       value
     }
@@ -65,6 +68,7 @@ gql`
       itemCode
       itemName
       invoiceName
+      invoiceDisplayName
       creditableAmountCents
       appliedTaxes {
         id
@@ -118,6 +122,18 @@ type UseCreateCreditNoteReturn = {
   onCreate: (
     value: CreditNoteForm,
   ) => Promise<{ data?: { createCreditNote?: { id?: string } }; errors?: ApolloError }>
+}
+
+const getFeeGroupedByDisplayName = (fee: InvoiceFeeFragment) => {
+  if (Object.values(fee?.groupedBy || {}).length === 0) return ''
+
+  const composableGroupName = [] as string[]
+
+  Object.values(fee?.groupedBy).forEach(
+    (groupValue) => !!groupValue && composableGroupName.push(groupValue as string),
+  )
+
+  return `${composableGroupName.filter((i) => !!i).join(' • ')}`
 }
 
 export const useCreateCreditNote: () => UseCreateCreditNoteReturn = () => {
@@ -223,12 +239,23 @@ export const useCreateCreditNote: () => UseCreateCreditNoteReturn = () => {
           return newFees
         }
 
-        const orderedData = reorderFees(invoiceSubscription?.fees as Fee[])
+        const orderedData = [...reorderFees(invoiceSubscription?.fees as Fee[])].sort((a, b) => {
+          if (a?.feeType === FeeTypesEnum.Commitment && b?.feeType !== FeeTypesEnum.Commitment) {
+            return 1
+          } else if (
+            a?.feeType !== FeeTypesEnum.Commitment &&
+            b?.feeType === FeeTypesEnum.Commitment
+          ) {
+            return -1
+          }
+
+          return 0
+        })
 
         const groupedFees = _groupBy(orderedData, (fee) => {
           // Custom group_by
           // either charge alone, group charge or true up fee
-          if (!fee?.charge && !fee?.group && !fee?.trueUpFee) {
+          if (fee?.feeType === FeeTypesEnum.Subscription) {
             return undefined
           } else if (!!fee?.charge?.id && fee?.group?.value) {
             return fee?.charge?.id
@@ -249,12 +276,19 @@ export const useCreateCreditNote: () => UseCreateCreditNoteReturn = () => {
             const fee = groupedFees[groupKey][0]
 
             if (fee?.creditableAmountCents > 0) {
+              let composableName = [
+                fee?.invoiceName || subscriptionName,
+                getFeeGroupedByDisplayName(fee),
+              ]
+                .filter((i) => !!i)
+                .join(' • ')
+
               return {
                 [`0_${fee?.id}`]: {
                   id: fee?.id,
                   checked: true,
                   value: deserializeAmount(fee?.creditableAmountCents, fee.amountCurrency),
-                  name: fee?.invoiceName || subscriptionName,
+                  name: composableName,
                   isTrueUpFee: trueUpFeeIds?.includes(fee?.id),
                   trueUpFee: fee?.trueUpFee,
                   maxAmount: fee?.creditableAmountCents,
@@ -271,16 +305,25 @@ export const useCreateCreditNote: () => UseCreateCreditNoteReturn = () => {
 
           if (
             feeGroup.length === 1 &&
-            [FeeTypesEnum.Charge, FeeTypesEnum.Subscription].includes(feeGroup[0]?.feeType) &&
+            [FeeTypesEnum.Charge, FeeTypesEnum.Subscription, FeeTypesEnum.Commitment].includes(
+              feeGroup[0]?.feeType,
+            ) &&
             firstFee?.creditableAmountCents > 0
           ) {
+            let composableName =
+              firstFee.feeType === FeeTypesEnum.Commitment
+                ? firstFee.invoiceDisplayName || 'Minimum commitment - True up'
+                : [firstFee?.invoiceName || subscriptionName, getFeeGroupedByDisplayName(firstFee)]
+                    .filter((i) => !!i)
+                    .join(' • ')
+
             return {
               ...groupApp,
               [`${index}_${firstFee?.id}`]: {
                 id: firstFee?.id,
                 checked: true,
                 value: deserializeAmount(firstFee?.creditableAmountCents, firstFee.amountCurrency),
-                name: firstFee.invoiceName || firstFee?.charge?.billableMetric?.name,
+                name: composableName,
                 isTrueUpFee: trueUpFeeIds?.includes(firstFee?.id),
                 trueUpFee: firstFee?.trueUpFee,
                 maxAmount: firstFee?.creditableAmountCents,
@@ -297,6 +340,18 @@ export const useCreateCreditNote: () => UseCreateCreditNoteReturn = () => {
               return accFee
             }
 
+            const feeGroupedByString = getFeeGroupedByDisplayName(feeGrouped)
+
+            const composableGroupName = !!feeGrouped?.groupName
+              ? [feeGrouped?.groupName]
+              : feeGrouped?.group?.key
+                ? [feeGrouped?.group?.key, feeGrouped?.group?.value]
+                : [feeGrouped?.group?.value as string]
+
+            const composableName = [feeGroupedByString, ...composableGroupName]
+              .filter((i) => !!i)
+              .join(' • ')
+
             return {
               ...accFee,
               [feeGrouped?.id]: {
@@ -306,11 +361,7 @@ export const useCreateCreditNote: () => UseCreateCreditNoteReturn = () => {
                   feeGrouped?.creditableAmountCents,
                   feeGrouped.amountCurrency,
                 ),
-                name: !!feeGrouped?.groupName
-                  ? feeGrouped?.groupName
-                  : feeGrouped?.group?.key
-                    ? `${feeGrouped?.group?.key} • ${feeGrouped?.group?.value}`
-                    : (feeGrouped?.group?.value as string),
+                name: composableName,
                 maxAmount: feeGrouped?.creditableAmountCents,
                 appliedTaxes: feeGrouped?.appliedTaxes || [],
               },

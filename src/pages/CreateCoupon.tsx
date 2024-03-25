@@ -513,7 +513,7 @@ const CreateCoupon = () => {
                         limitPlansList.map((plan, i) => (
                           <PlanLine key={`limited-plan-${plan.id}`} data-test={`limited-plan-${i}`}>
                             <PlanLeftBlock>
-                              <Avatar variant="connector">
+                              <Avatar size="big" variant="connector">
                                 <Icon name="board" />
                               </Avatar>
                               <PlanLeftBlockInfos>
@@ -553,7 +553,7 @@ const CreateCoupon = () => {
                             data-test={`limited-billable-metric-${i}`}
                           >
                             <PlanLeftBlock>
-                              <Avatar variant="connector">
+                              <Avatar size="big" variant="connector">
                                 <Icon name="board" />
                               </Avatar>
                               <PlanLeftBlockInfos>
@@ -750,11 +750,6 @@ const StyledButtonGroup = styled(ButtonGroup)`
   && {
     margin-left: auto;
     align-items: initial;
-
-    ${theme.breakpoints.down('md')} {
-      margin-left: 0;
-      flex-direction: column-reverse;
-    }
   }
 `
 

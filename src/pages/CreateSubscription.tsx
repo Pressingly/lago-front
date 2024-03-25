@@ -32,8 +32,10 @@ import {
   EditInvoiceDisplayNameRef,
 } from '~/components/invoices/EditInvoiceDisplayName'
 import { ChargesSection } from '~/components/plans/ChargesSection'
+import { CommitmentsSection } from '~/components/plans/CommitmentsSection'
 import { FixedFeeSection } from '~/components/plans/FixedFeeSection'
 import { PlanSettingsSection } from '~/components/plans/PlanSettingsSection'
+import { LocalChargeInput } from '~/components/plans/types'
 import { PremiumWarningDialog, PremiumWarningDialogRef } from '~/components/PremiumWarningDialog'
 import { WarningDialog, WarningDialogRef } from '~/components/WarningDialog'
 import { dateErrorCodes } from '~/core/constants/form'
@@ -730,7 +732,14 @@ const CreateSubscription = () => {
                     isInSubscriptionForm={isInSubscriptionForm}
                     subscriptionFormType={formType}
                     formikProps={planFormikProps}
-                    alreadyExistingCharges={plan?.charges}
+                    premiumWarningDialogRef={premiumWarningDialogRef}
+                    alreadyExistingCharges={plan?.charges as LocalChargeInput[]}
+                    editInvoiceDisplayNameRef={editInvoiceDisplayNameRef}
+                  />
+
+                  <CommitmentsSection
+                    formikProps={planFormikProps}
+                    premiumWarningDialogRef={premiumWarningDialogRef}
                     editInvoiceDisplayNameRef={editInvoiceDisplayNameRef}
                   />
                 </PlanFormConditionalWrapper>
@@ -832,7 +841,7 @@ const FormPlanWrapper = styled.div`
 const InlineFields = styled.div`
   display: flex;
   gap: ${theme.spacing(6)};
-  align-items: flex-end;
+  align-items: flex-start;
 
   > * {
     flex: 1;

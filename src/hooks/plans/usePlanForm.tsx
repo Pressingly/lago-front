@@ -52,6 +52,7 @@ gql`
     updatePlan(input: $input) {
       ...PlanItem
       ...DeletePlanDialog
+      ...EditPlan
     }
   }
 
@@ -138,8 +139,19 @@ export const usePlanForm: ({
             : undefined
           : plan?.trialPeriod,
       billChargesMonthly: plan?.billChargesMonthly || undefined,
+      minimumCommitment: !!plan?.minimumCommitment
+        ? {
+            ...plan?.minimumCommitment,
+            amountCents: String(
+              deserializeAmount(
+                plan?.minimumCommitment.amountCents || 0,
+                initialCurrency || CurrencyEnum.Usd,
+              ),
+            ),
+          }
+        : {},
       charges: plan?.charges
-        ? plan?.charges.map(
+        ? (plan?.charges.map(
             ({
               taxes,
               properties,
@@ -172,7 +184,7 @@ export const usePlanForm: ({
               chargeGroup: chargeGroup || undefined,
               ...charge,
             }),
-          )
+          ) as LocalChargeInput[])
         : ([] as LocalChargeInput[]),
       chargeGroups: plan?.chargeGroups
         ? plan.chargeGroups.map(
@@ -197,6 +209,30 @@ export const usePlanForm: ({
       amountCents: string().required(''),
       trialPeriod: number().typeError(translate('text_624ea7c29103fd010732ab7d')).nullable(),
       amountCurrency: string().required(''),
+      minimumCommitment: object()
+        .test({
+          test: function (value, { from }) {
+            if (from && from[1]) {
+              // If minimum commitment is an empty object
+              if (
+                from[1]?.value?.minimumCommitment &&
+                !Object.keys(from[1]?.value?.minimumCommitment).length
+              ) {
+                return true
+              }
+              // If no minimum commitment amount cents is defined but object is present
+              if (
+                from[1]?.value?.minimumCommitment &&
+                !Number(from[1]?.value?.minimumCommitment?.amountCents)
+              ) {
+                return false
+              }
+            }
+
+            return true
+          },
+        })
+        .nullable(),
       charges: chargeSchema,
     }),
     enableReinitialize: true,

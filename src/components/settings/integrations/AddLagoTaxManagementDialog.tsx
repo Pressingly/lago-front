@@ -1,4 +1,3 @@
-// TODO:
 import { gql } from '@apollo/client'
 import { useFormik } from 'formik'
 import { forwardRef } from 'react'
@@ -15,13 +14,13 @@ import { TAX_MANAGEMENT_INTEGRATION_ROUTE } from '~/core/router'
 import {
   CountryCode,
   UpdateOrganizationInput,
-  useUpdateOrgaForTagoTaxManagementMutation,
+  useUpdateOrgaForLagoTaxManagementMutation,
 } from '~/generated/graphql'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { theme } from '~/styles'
 
 gql`
-  mutation updateOrgaForTagoTaxManagement($input: UpdateOrganizationInput!) {
+  mutation updateOrgaForLagoTaxManagement($input: UpdateOrganizationInput!) {
     updateOrganization(input: $input) {
       id
     }
@@ -58,7 +57,7 @@ export const AddLagoTaxManagementDialog = forwardRef<AddLagoTaxManagementDialogR
       validateOnMount: true,
       enableReinitialize: true,
     })
-    const [updateOrga] = useUpdateOrgaForTagoTaxManagementMutation({
+    const [updateOrga] = useUpdateOrgaForLagoTaxManagementMutation({
       onCompleted({ updateOrganization }) {
         if (updateOrganization?.id) {
           navigate(TAX_MANAGEMENT_INTEGRATION_ROUTE)

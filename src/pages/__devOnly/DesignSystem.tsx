@@ -1,4 +1,4 @@
-import { InputAdornment } from '@mui/material'
+import { InputAdornment, Stack } from '@mui/material'
 import { useFormik } from 'formik'
 import { useRef } from 'react'
 import { generatePath } from 'react-router-dom'
@@ -27,7 +27,6 @@ import {
   Tooltip,
   Typography,
 } from '~/components/designSystem'
-import { BetaChip } from '~/components/designSystem/BetaChip'
 import {
   ButtonSelectorField,
   Checkbox,
@@ -40,6 +39,7 @@ import {
   TextInputField,
 } from '~/components/form'
 import { AmountInputField } from '~/components/form/AmountInput'
+import { MultipleComboBox, MultipleComboBoxField } from '~/components/form/MultipleComboBox'
 import { addToast, TToast } from '~/core/apolloClient'
 import { ONLY_DEV_DESIGN_SYSTEM_ROUTE, ONLY_DEV_DESIGN_SYSTEM_TAB_ROUTE } from '~/core/router'
 import { CurrencyEnum } from '~/generated/graphql'
@@ -102,6 +102,7 @@ const DesignSystem = () => {
       inputNumber: undefined,
       switch: true,
       combobox: undefined,
+      multipleCombobox: [],
       radio: false,
       buttonSelector: undefined,
       buttonSelector2: 'time',
@@ -228,66 +229,73 @@ const DesignSystem = () => {
                   </Tooltip>
                 </Block>
 
-                <GroupTitle variant="headline">Chips</GroupTitle>
+                <GroupTitle variant="headline">New Chips</GroupTitle>
                 <Block $marginBottom={theme.spacing(6)}>
-                  <Chip label="I'm a primary 🍟" />
+                  <Chip label="Small" size="small" />
+                  <Chip label="Default" />
+                  <Chip label="Big" size="big" />
                   <Chip label="I have an icon" icon="scissor" />
                   <Chip
-                    label="I have an icon"
-                    icon="scissor"
-                    onClose={() => {
+                    label="I have an icon and delete"
+                    icon="percentage"
+                    onDelete={() => {
                       // eslint-disable-next-line no-console
                       console.log('Chip clicked')
                     }}
                   />
                   <Chip
+                    label="Tooltip on icon"
+                    icon="scissor"
+                    deleteIconLabel="Delete"
+                    onDelete={() => {
+                      // eslint-disable-next-line no-console
+                      console.log('Chip clicked')
+                    }}
+                  />
+                  <Chip
+                    error
                     label="I have an error"
                     icon="scissor"
-                    type="error"
-                    onClose={() => {
+                    onDelete={() => {
                       // eslint-disable-next-line no-console
                       console.log('Chip clicked')
                     }}
                   />
+                  <Chip type="secondary" label="Small" size="small" />
+                  <Chip type="secondary" label="Default" />
+                  <Chip type="secondary" label="Big" size="big" />
                   <Chip
-                    label="Secondary"
+                    type="secondary"
+                    label="I have an icon and delete"
                     icon="percentage"
-                    variant="secondary"
-                    closeIcon="trash"
-                    onClose={() => {
+                    onDelete={() => {
                       // eslint-disable-next-line no-console
                       console.log('Chip clicked')
                     }}
                   />
                   <Chip
-                    label="Secondary medium"
-                    icon="percentage"
-                    variant="secondary"
-                    size="medium"
-                    closeIcon="trash"
-                    onClose={() => {
+                    type="secondary"
+                    label="Tooltip on icon"
+                    icon="scissor"
+                    deleteIconLabel="Delete"
+                    onDelete={() => {
                       // eslint-disable-next-line no-console
                       console.log('Chip clicked')
                     }}
                   />
                   <Chip
-                    label="Secondary medium with error"
-                    type="error"
-                    icon="lock"
-                    variant="secondary"
-                    size="medium"
-                    closeIcon="trash"
-                    onClose={() => {
+                    error
+                    type="secondary"
+                    label="I have an error"
+                    icon="scissor"
+                    onDelete={() => {
                       // eslint-disable-next-line no-console
                       console.log('Chip clicked')
                     }}
                   />
-                </Block>
-
-                <GroupTitle variant="headline">Beta Chip</GroupTitle>
-                <Block $marginBottom={theme.spacing(6)}>
-                  <BetaChip />
-                  <BetaChip size="xsmall" />
+                  <Chip beta label="Small beta" size="small" />
+                  <Chip beta label="Beta" />
+                  <Chip beta label="Beta big" size="big" />
                 </Block>
 
                 <GroupTitle variant="headline">Alert</GroupTitle>
@@ -647,6 +655,9 @@ const DesignSystem = () => {
                   <Button variant="primary" size="medium">
                     Medium
                   </Button>
+                  <Button variant="primary" size="small">
+                    Small
+                  </Button>
                   <Button variant="primary" icon="coupon" size="large" />
                   <Button variant="primary" icon="download" size="medium" />
                   <Button variant="primary" icon="trash" size="small" />
@@ -681,6 +692,15 @@ const DesignSystem = () => {
                 <GroupTitle variant="subhead">Secondary</GroupTitle>
                 <Block $marginBottom={theme.spacing(6)}>
                   <Button variant="secondary">Default</Button>
+                  <Button variant="secondary" size="large">
+                    Large
+                  </Button>
+                  <Button variant="secondary" size="medium">
+                    Medium
+                  </Button>
+                  <Button variant="secondary" size="small">
+                    Small
+                  </Button>
                   <Button variant="secondary" disabled>
                     Disabled
                   </Button>
@@ -692,6 +712,15 @@ const DesignSystem = () => {
                 <GroupTitle variant="subhead">Tertiary</GroupTitle>
                 <Block $marginBottom={theme.spacing(6)}>
                   <Button variant="tertiary">Default</Button>
+                  <Button variant="tertiary" size="large">
+                    Large
+                  </Button>
+                  <Button variant="tertiary" size="medium">
+                    Medium
+                  </Button>
+                  <Button variant="tertiary" size="small">
+                    Small
+                  </Button>
                   <Button variant="tertiary" disabled>
                     Disabled
                   </Button>
@@ -703,6 +732,18 @@ const DesignSystem = () => {
                 <GroupTitle variant="subhead">Quaternary</GroupTitle>
                 <Block $marginBottom={theme.spacing(6)}>
                   <Button variant="quaternary">Default</Button>
+                  <Button variant="quaternary" size="large">
+                    Large
+                  </Button>
+                  <Button variant="quaternary" size="medium">
+                    Medium
+                  </Button>
+                  <Button variant="quaternary" size="small">
+                    small
+                  </Button>
+                  <Button variant="quaternary" startIcon="plus" size="small">
+                    Add
+                  </Button>
                   <Button variant="quaternary" disabled>
                     Disabled
                   </Button>
@@ -1042,6 +1083,73 @@ const DesignSystem = () => {
                       placeholder="You don't get to answer"
                       disabled
                       formikProps={formikProps}
+                    />
+
+                    <MultipleComboBoxField
+                      name="multipleCombobox"
+                      data={'abcdefghijklmnopqrstuvwxyz'.split('').map((letter, i) => ({
+                        value: `${letter}-${i}`,
+                      }))}
+                      label="Multiple"
+                      placeholder="Placeholder"
+                      formikProps={formikProps}
+                    />
+                    <MultipleComboBoxField
+                      name="multipleCombobox"
+                      data={'abcdefghijklmnopqrstuvwxyz'.split('').map((letter, i) => ({
+                        value: `${letter}-${i}`,
+                        group: Math.round(i / 5) + '',
+                      }))}
+                      label="Multiple"
+                      placeholder="Placeholder"
+                      formikProps={formikProps}
+                    />
+                    <MultipleComboBoxField
+                      freeSolo
+                      name="multipleCombobox"
+                      data={'abcdefghijklmnopqrstuvwxyz'.split('').map((letter, i) => ({
+                        value: `${letter}-${i}`,
+                        group: Math.round(i / 5) + '',
+                      }))}
+                      label="Multiple Free Solo"
+                      placeholder="Placeholder"
+                      formikProps={formikProps}
+                    />
+                    <MultipleComboBoxField
+                      freeSolo
+                      name="multipleCombobox"
+                      label="Multiple Free Solo No Data"
+                      placeholder="Placeholder"
+                      formikProps={formikProps}
+                    />
+                    <Stack gap={1} direction="row" flexWrap="wrap">
+                      {formikProps.values.multipleCombobox.map(
+                        (value: { value: string }, index) => (
+                          <Chip
+                            key={index}
+                            label={value.value}
+                            onDelete={() => {
+                              const newValues = formikProps.values.multipleCombobox.filter(
+                                (v) => v !== value,
+                              )
+
+                              formikProps.setFieldValue('multipleCombobox', newValues)
+                            }}
+                          />
+                        ),
+                      )}
+                    </Stack>
+                    <MultipleComboBox
+                      freeSolo
+                      hideTags
+                      disableClearable
+                      data={[]}
+                      onChange={(newValue) =>
+                        formikProps.setFieldValue('multipleCombobox', newValue)
+                      }
+                      value={formikProps.values.multipleCombobox}
+                      label="Multiple Free Solo No Data No Tags"
+                      placeholder="Placeholder"
                     />
                   </Block>
 

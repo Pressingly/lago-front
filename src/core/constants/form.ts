@@ -21,6 +21,7 @@ export const SEARCH_RECURRING_CHARGE_INPUT_CLASSNAME = 'searchRecurringChargeInp
 export const SEARCH_GROUP_CHARGE_INPUT_CLASSNAME = 'searchGroupChargeInput'
 export const SEARCH_TAX_INPUT_FOR_PLAN_CLASSNAME = 'searchTaxForPlanInput'
 export const SEARCH_TAX_INPUT_FOR_CHARGE_CLASSNAME = 'searchTaxForChargeInput'
+export const SEARCH_TAX_INPUT_FOR_MIN_COMMITMENT_CLASSNAME = 'searchTaxForMinCommitmentInput'
 export const SEARCH_CHARGE_GROUP_INPUT_CLASSNAME = 'searchChargeGroupInputClassname'
 export const ONE_TIER_EXAMPLE_UNITS = 10
 // AddOns

@@ -53,6 +53,12 @@ module.exports = {
   "project_6543ca0b70910093c87cd539": {
     "base": require('./-ready-for-dev---dashboards---add-financial-reporting-to-lago__base.json')
   },
+  "project_659e67cc6afb842e8db57be5": {
+    "base": require('./-ready-for-dev---invoices---display-unit-price-to-item-in-invoices__base.json')
+  },
+  "project_65a6b4dfc20f99078eb6e8fe": {
+    "base": require('./-ready-for-dev---invoices---edit-a-draft-invoice__base.json')
+  },
   "project_65269b3f720470569cb17228": {
     "base": require('./-ready-for-dev---invoices---void-invoices__base.json')
   },
@@ -80,8 +86,14 @@ module.exports = {
   "project_64de471ef3038f0ad36833f8": {
     "base": require('./-ready-for-dev---plans---graduated-percentage-charge-model__base.json')
   },
+  "project_65ba6d43a5aaf708ee0c758e": {
+    "base": require('./-ready-for-dev---plans---group-by-fees-on-invoices__base.json')
+  },
   "project_65018c8af04a866c7bcc6cb8": {
     "base": require('./-ready-for-dev---plans---invoice-display-names__base.json')
+  },
+  "project_65d601bee599243feb44af59": {
+    "base": require('./-ready-for-dev---plans---invoice-minimum-spending__base.json')
   },
   "project_64e7b269852fc4ff0e0ec11c": {
     "base": require('./-ready-for-dev---plans---min--max-per-transaction__base.json')
@@ -103,6 +115,12 @@ module.exports = {
   },
   "project_64c7a896197f1907cbc6371c": {
     "base": require('./-ready-for-dev---settings---net-payment-term__base.json')
+  },
+  "project_6584550ac28443047853c17f": {
+    "base": require('./-ready-for-dev---settings---several-psp-accounts__base.json')
+  },
+  "project_65e1f9032a71b571c754c489": {
+    "base": require('./-ready-for-dev---settings--customers---lago-x-stripe-ach--bacs__base.json')
   },
   "project_64aeb7b7d5628db33254c4bb": {
     "base": require('./-ready-for-dev---settings--customers---lago-x-stripe-sdd__base.json')
@@ -160,6 +178,9 @@ module.exports = {
   },
   "project_6328e70891e49d4d9732180d": {
     "base": require('./-wip---customers---overwrite-subscription-per-customer__base.json')
+  },
+  "project_65ae73e967bfa7ba6e9fdf21": {
+    "base": require('./-wip---customers---real-time-prepaid-credits__base.json')
   },
   "project_62ea7cd19883fb6718fa823c": {
     "base": require('./-wip---customers---subscription-on-anniversary-date__base.json')

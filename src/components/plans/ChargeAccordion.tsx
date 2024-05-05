@@ -33,6 +33,7 @@ import {
   PackageChargeFragmentDoc,
   PercentageChargeFragmentDoc,
   PlanInterval,
+  StandardChargeFragmentDoc,
   TaxForPlanChargeAccordionFragment,
   TimebasedChargeFragmentDoc,
   useGetTaxesForChargesLazyQuery,
@@ -98,6 +99,7 @@ gql`
     ...GraduatedPercentageCharge
     ...VolumeRanges
     ...PackageCharge
+    ...StandardCharge
     ...PercentageCharge
     ...ChargeForChargeOptionsAccordion
     ...TimebasedCharge
@@ -120,6 +122,7 @@ gql`
   ${GraduatedPercentageChargeFragmentDoc}
   ${VolumeRangesFragmentDoc}
   ${PackageChargeFragmentDoc}
+  ${StandardChargeFragmentDoc}
   ${PercentageChargeFragmentDoc}
   ${ChargeForChargeOptionsAccordionFragmentDoc}
   ${TimebasedChargeFragmentDoc}
@@ -620,8 +623,8 @@ export const ChargeAccordion = memo(
                   index={index}
                   propertyCursor="properties"
                   premiumWarningDialogRef={premiumWarningDialogRef}
-                  valuePointer={localCharge.properties}
-                  handleUpdate={handleUpdate}
+                  valuePointer={localCharge?.properties}
+                  initialValuePointer={initialLocalCharge?.properties}
                 />
               </ConditionalWrapper>
             )}
@@ -732,9 +735,12 @@ export const ChargeAccordion = memo(
                     premiumWarningDialogRef={premiumWarningDialogRef}
                     valuePointer={
                       localCharge?.groupProperties &&
-                      localCharge?.groupProperties[groupPropertyIndex].values
+                      localCharge?.groupProperties[groupPropertyIndex]?.values
                     }
-                    handleUpdate={handleUpdate}
+                    initialValuePointer={
+                      initialLocalCharge?.groupProperties &&
+                      initialLocalCharge?.groupProperties[groupPropertyIndex]?.values
+                    }
                   />
                 </Accordion>
               )
@@ -952,12 +958,12 @@ export const ChargeAccordion = memo(
                     <Chip
                       key={localTaxId}
                       label={`${name} (${rate}%)`}
-                      variant="secondary"
+                      type="secondary"
                       size="medium"
-                      closeIcon="trash"
+                      deleteIcon="trash"
                       icon="percentage"
-                      onCloseLabel={translate('text_63aa085d28b8510cd46443ff')}
-                      onClose={() => {
+                      deleteIconLabel={translate('text_63aa085d28b8510cd46443ff')}
+                      onDelete={() => {
                         const newTaxedArray =
                           localCharge.taxes?.filter((tax) => tax.id !== localTaxId) || []
 
@@ -1124,6 +1130,7 @@ const InvoiceableSwitchWrapper = styled.div`
 `
 const InlineButtonsWrapper = styled.div`
   display: flex;
+  flex-wrap: wrap;
 `
 
 const TaxLabel = styled(Typography)`
@@ -1185,7 +1192,6 @@ const AllChargesWrapper = styled.div<{ $hasGroupDisplay?: boolean; $hasChargesTo
   gap: ${theme.spacing(4)};
   margin-top: ${({ $hasChargesToDisplay, $hasGroupDisplay }) =>
     $hasChargesToDisplay && $hasGroupDisplay ? theme.spacing(6) : 0};
-  margin-bottom: ${theme.spacing(6)};
   padding: ${({ $hasGroupDisplay }) => ($hasGroupDisplay ? `0 ${theme.spacing(4)}` : 0)};
 `
 
@@ -1194,7 +1200,7 @@ const ChargeAddActionsWrapper = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 ${theme.spacing(4)};
-  margin-bottom: ${theme.spacing(4)};
+  margin: ${theme.spacing(4)} 0;
 `
 
 const ChargeAddActionsWrapperLeft = styled.div`

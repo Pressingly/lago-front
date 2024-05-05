@@ -147,36 +147,41 @@ const SideNav = () => {
                   <UserEmail variant="captionHl" noWrap>
                     {currentUser?.email}
                   </UserEmail>
-                  {currentUser?.organizations && (
+                  {!!currentUser?.organizations?.length && (
                     <OrganizationList>
-                      {currentUser?.organizations?.map(({ id, name, logoUrl }) => (
-                        <Button
-                          key={id}
-                          align="left"
-                          variant={id === organization?.id ? 'secondary' : 'quaternary'}
-                          onClick={async () => {
-                            await switchCurrentOrganization(client, id)
-                            navigate(BILLABLE_METRICS_ROUTE)
-                            closePopper()
-                          }}
-                        >
-                          {logoUrl ? (
-                            <OrganizationAvatar size="small" variant="connector">
-                              <img src={logoUrl as string} alt={`${name}'s logo`} />
-                            </OrganizationAvatar>
-                          ) : (
-                            <OrganizationAvatar
-                              variant="company"
-                              identifier={name || ''}
-                              size="small"
-                              initials={(name ?? 'Lago')[0]}
-                            />
-                          )}
-                          <Typography noWrap color="inherit">
-                            {name}
-                          </Typography>
-                        </Button>
-                      ))}
+                      {Object.values(currentUser?.organizations)
+                        ?.sort(
+                          (a, b) =>
+                            a.name.toLowerCase()?.localeCompare(b.name.toLowerCase() ?? '') ?? 0,
+                        )
+                        ?.map(({ id, name, logoUrl }) => (
+                          <Button
+                            key={id}
+                            align="left"
+                            variant={id === organization?.id ? 'secondary' : 'quaternary'}
+                            onClick={async () => {
+                              await switchCurrentOrganization(client, id)
+                              navigate(HOME_ROUTE)
+                              closePopper()
+                            }}
+                          >
+                            {logoUrl ? (
+                              <OrganizationAvatar size="small" variant="connector">
+                                <img src={logoUrl as string} alt={`${name}'s logo`} />
+                              </OrganizationAvatar>
+                            ) : (
+                              <OrganizationAvatar
+                                variant="company"
+                                identifier={name || ''}
+                                size="small"
+                                initials={(name ?? 'Lago')[0]}
+                              />
+                            )}
+                            <Typography noWrap color="inherit">
+                              {name}
+                            </Typography>
+                          </Button>
+                        ))}
                     </OrganizationList>
                   )}
                   <Logout>
@@ -324,6 +329,17 @@ const SideNav = () => {
                 ]}
                 orientation="vertical"
               />
+
+              <AnnouncementAction
+                onClick={() => {
+                  window.open('https://www.getlago.com/blog/lago-raises-22-millions', '_blank')
+                }}
+              >
+                <Icon name="heart" />
+                <Typography variant="captionHl" color="grey700">
+                  Lago v1 is live!
+                </Typography>
+              </AnnouncementAction>
             </BottomButtons>
           </Nav>
         </Drawer>
@@ -421,6 +437,7 @@ const BottomButtons = styled.div`
   box-sizing: border-box;
   flex-direction: column;
   display: flex;
+  gap: ${theme.spacing(1)};
 
   > * {
     text-align: left;
@@ -501,6 +518,26 @@ const ExternalLink = styled.a`
 
   &:visited {
     color: ${theme.palette.primary[600]};
+  }
+`
+
+const AnnouncementAction = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  background-color: ${theme.palette.grey[100]};
+  padding: 10px 12px;
+  box-sizing: border-box;
+  outline: 1px solid ${theme.palette.grey[200]};
+  outline-offset: -1px;
+  gap: ${theme.spacing(2)};
+  cursor: pointer;
+
+  svg {
+    path {
+      fill: ${theme.palette.error[300]};
+    }
   }
 `
 

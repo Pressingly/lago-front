@@ -36,6 +36,64 @@ export const theme = createTheme({
     borderRadius: 12, // Default is 4 but can be 12px
   },
   components: {
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          height: 'fit-content',
+          width: 'fit-content',
+          borderRadius: '8px',
+          minHeight: '32px',
+          padding: '0px 8px',
+          fontSize: '14px',
+          lineHeight: '20px',
+          fontWeight: 500,
+          outline: `1px solid ${palette.grey[300]}`,
+          outlineOffset: '-1px',
+          '&.chip-size--small': {
+            minHeight: '20px',
+            padding: '0px 4px',
+          },
+          '&.chip-size--big': {
+            minHeight: '40px',
+            padding: '0px 12px',
+          },
+          '&.chip--error': {
+            backgroundColor: palette.error[100],
+            outline: `1px solid ${palette.error[300]}`,
+            color: palette.error[600],
+            path: {
+              fill: palette.error[600],
+            },
+          },
+        },
+        filled: {
+          backgroundColor: palette.grey[100],
+        },
+        outlined: {
+          backgroundColor: palette.common.white,
+        },
+        label: {
+          padding: '0px',
+          margin: '0px',
+        },
+        icon: {
+          width: '12px',
+          height: '12px',
+          padding: '0px',
+          margin: '0px',
+          marginRight: '4px',
+          color: palette.grey[600],
+        },
+        deleteIcon: {
+          width: '20px',
+          height: '20px',
+          margin: '6px 0 6px 8px',
+        },
+      },
+    },
     MuiLink: {
       defaultProps: {
         color: 'primary',
@@ -134,7 +192,7 @@ export const theme = createTheme({
           ...typographyBody,
           height: '48px',
           boxSizing: 'border-box',
-          padding: '10px 16px',
+          padding: '10px 16px !important',
           color: palette.grey[700],
           borderRadius: '12px',
           '&::placeholder': {
@@ -207,6 +265,9 @@ export const theme = createTheme({
           '&.MuiPaper-root': {
             borderRadius: '12px',
           },
+          '&.Mui-expanded': {
+            margin: '0',
+          },
           '&.MuiPaper-elevation1': {
             boxShadow: 'none',
           },
@@ -237,14 +298,16 @@ export const theme = createTheme({
     MuiAutocomplete: {
       styleOverrides: {
         paper: {
-          padding: 8,
-          // 5 items of an height of 56px (see ComboBox.tsx) with paddings
-          maxHeight: 5 * 56 + 4 * 4,
+          padding: '8px important',
+          maxHeight: 320,
           overflow: 'auto',
           scrollBehavior: 'smooth',
         },
         loading: { padding: 0 },
         listbox: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
           padding: 0,
         },
         root: {
@@ -258,6 +321,14 @@ export const theme = createTheme({
               },
             },
           },
+        },
+        popupIndicator: {
+          backgroundColor: 'transparent',
+          cursor: 'pointer',
+        },
+        clearIndicator: {
+          backgroundColor: 'transparent',
+          cursor: 'pointer',
         },
         option: {
           paddingLeft: 0,
@@ -304,12 +375,27 @@ export const theme = createTheme({
             transform: 'scale(0.99)',
           },
         },
+        endIcon: {
+          marginLeft: '8px',
+          marginRight: 0,
+        },
+        startIcon: {
+          marginLeft: 0,
+          marginRight: '8px',
+        },
         sizeSmall: {
+          height: '32px',
+          padding: '4px',
+          borderRadius: '8px',
           '&.button-icon-only': {
             width: '24px',
             height: '24px',
-            padding: '4px',
-            borderRadius: '8px',
+          },
+          '.MuiButton-endIcon': {
+            marginLeft: '4px',
+          },
+          '.MuiButton-startIcon': {
+            marginRight: '4px',
           },
         },
         sizeLarge: {
@@ -325,14 +411,6 @@ export const theme = createTheme({
           '&:active': {
             transform: 'scale(0.999)',
           },
-        },
-        endIcon: {
-          marginLeft: '8px',
-          marginRight: 0,
-        },
-        startIcon: {
-          marginLeft: 0,
-          marginRight: '8px',
         },
         text: {
           padding: '6px 12px',

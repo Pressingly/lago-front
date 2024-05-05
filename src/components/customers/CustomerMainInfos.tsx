@@ -1,7 +1,8 @@
 import { gql } from '@apollo/client'
+import { Stack } from '@mui/material'
 import styled from 'styled-components'
 
-import { Button, Skeleton, Typography } from '~/components/designSystem'
+import { Avatar, Button, Skeleton, Typography } from '~/components/designSystem'
 import { CountryCodes } from '~/core/constants/countryCodes'
 import { getTimezoneConfig } from '~/core/timezone'
 import {
@@ -9,10 +10,22 @@ import {
   ProviderPaymentMethodsEnum,
   ProviderTypeEnum,
   TimezoneEnum,
+  useIntegrationsListForCustomerMainInfosQuery,
 } from '~/generated/graphql'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
+import Adyen from '~/public/images/adyen.svg'
+import Gocardless from '~/public/images/gocardless.svg'
+import Pinet from '~/public/images/pinet.svg'
+import Stripe from '~/public/images/stripe.svg'
 import { theme } from '~/styles'
 import { SectionHeader } from '~/styles/customer'
+
+const PaymentProviderMethodTranslationsLookup = {
+  [ProviderPaymentMethodsEnum.BacsDebit]: 'text_65e1f90471bc198c0c934d92',
+  [ProviderPaymentMethodsEnum.Card]: 'text_64aeb7b998c4322918c84208',
+  [ProviderPaymentMethodsEnum.SepaDebit]: 'text_64aeb7b998c4322918c8420c',
+  [ProviderPaymentMethodsEnum.UsBankAccount]: 'text_65e1f90471bc198c0c934d8e',
+}
 
 gql`
   fragment CustomerMainInfos on Customer {
@@ -35,6 +48,7 @@ gql`
     zipcode
     paymentProvider
     timezone
+    paymentProviderCode
     providerCustomer {
       id
       providerCustomerId
@@ -47,6 +61,30 @@ gql`
       value
     }
   }
+
+  query integrationsListForCustomerMainInfos($limit: Int) {
+    paymentProviders(limit: $limit) {
+      collection {
+        ... on StripeProvider {
+          id
+          name
+          code
+        }
+
+        ... on GocardlessProvider {
+          id
+          name
+          code
+        }
+
+        ... on AdyenProvider {
+          id
+          name
+          code
+        }
+      }
+    }
+  }
 `
 
 interface CustomerMainInfosProps {
@@ -57,6 +95,12 @@ interface CustomerMainInfosProps {
 
 export const CustomerMainInfos = ({ loading, customer, onEdit }: CustomerMainInfosProps) => {
   const { translate } = useInternationalization()
+  const { data } = useIntegrationsListForCustomerMainInfosQuery({
+    variables: { limit: 1000 },
+  })
+  const linkedProvider = data?.paymentProviders?.collection?.find(
+    (provider) => provider?.code === customer?.paymentProviderCode,
+  )
 
   if (loading || !customer)
     return (
@@ -164,11 +208,7 @@ export const CustomerMainInfos = ({ loading, customer, onEdit }: CustomerMainInf
       {email && (
         <div>
           <Typography variant="caption">{translate('text_626c0c301a16a600ea061479')}</Typography>
-          {email.split(',').map((mail) => (
-            <Typography key={`customer-email-${mail}`} color="textSecondary" noWrap>
-              {mail}
-            </Typography>
-          ))}
+          <Typography color="textSecondary">{email.split(',').join(', ')}</Typography>
         </div>
       )}
       {url && (
@@ -194,20 +234,23 @@ export const CustomerMainInfos = ({ loading, customer, onEdit }: CustomerMainInf
           {country && <Typography color="textSecondary">{CountryCodes[country]}</Typography>}
         </div>
       )}
-      {!!paymentProvider && (
+      {!!paymentProvider && !!linkedProvider?.name && (
         <div>
-          <Typography variant="caption">{translate('text_62b5c912506c4905fa755248')}</Typography>
-          <Typography color="textSecondary">
-            {paymentProvider === ProviderTypeEnum?.Stripe
-              ? translate('text_62b5c912506c4905fa75524a')
-              : paymentProvider === ProviderTypeEnum?.Gocardless
-                ? translate('text_634ea0ecc6147de10ddb6648')
-                : paymentProvider === ProviderTypeEnum?.Adyen
-                  ? translate('text_645d071272418a14c1c76a6d')
-                  : paymentProvider === ProviderTypeEnum?.Pinet
-                    ? 'PINET'
-                    : ''}
-          </Typography>
+          <Typography variant="caption">{translate('text_62b1edddbf5f461ab9712795')}</Typography>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar variant="connector" size="small">
+              {paymentProvider === ProviderTypeEnum?.Stripe ? (
+                <Stripe />
+              ) : paymentProvider === ProviderTypeEnum?.Gocardless ? (
+                <Gocardless />
+              ) : paymentProvider === ProviderTypeEnum?.Adyen ? (
+                <Adyen />
+              ) : paymentProvider === ProviderTypeEnum?.Pinet ? (
+                <Pinet />
+              ) : null}
+            </Avatar>
+            <Typography color="grey700">{linkedProvider?.name}</Typography>
+          </Stack>
         </div>
       )}
       {!!providerCustomer && !!providerCustomer?.providerCustomerId && (
@@ -220,13 +263,11 @@ export const CustomerMainInfos = ({ loading, customer, onEdit }: CustomerMainInf
         !!providerCustomer?.providerPaymentMethods?.length && (
           <div>
             <Typography variant="caption">{translate('text_64aeb7b998c4322918c84237')}</Typography>
-            <Typography color="textSecondary">
-              {providerCustomer?.providerPaymentMethods?.length === 2
-                ? translate('text_64aeb7b998c4322918c8423b')
-                : providerCustomer?.providerPaymentMethods[0] === ProviderPaymentMethodsEnum?.Card
-                  ? translate('text_64aeb7b998c4322918c84208')
-                  : translate('text_64aeb7b998c4322918c8420c')}
-            </Typography>
+            {providerCustomer?.providerPaymentMethods?.map((method) => (
+              <Typography key={`customer-payment-method-${method}`} color="textSecondary">
+                {translate(PaymentProviderMethodTranslationsLookup[method])}
+              </Typography>
+            ))}
           </div>
         )}
       {paymentProvider === ProviderTypeEnum?.Pinet && (

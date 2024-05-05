@@ -35,17 +35,18 @@ enum ColorTypeEnum {
   textSecondary = 'text.secondary', // This is to maintain the existing code
 }
 
-type Color = keyof typeof ColorTypeEnum
+export type TypographyColor = keyof typeof ColorTypeEnum
 export interface TypographyProps
   extends Pick<MuiTypographyProps, 'variant' | 'children' | 'noWrap' | 'align'> {
   className?: string
   component?: ElementType
-  color?: Color
+  color?: TypographyColor
   html?: string
   forceBreak?: boolean
+  blur?: boolean
 }
 
-const mapColor = (variant: TypographyProps['variant'], color?: Color): ColorTypeEnum => {
+const mapColor = (variant: TypographyProps['variant'], color?: TypographyColor): ColorTypeEnum => {
   if (color) return ColorTypeEnum[color]
 
   switch (variant) {
@@ -73,6 +74,7 @@ export const Typography = memo(
     component = 'div',
     noWrap,
     forceBreak,
+    blur,
     ...props
   }: TypographyProps) => {
     const getSanitizedHtml = (htmlString: string) => {
@@ -142,6 +144,7 @@ export const Typography = memo(
         $code={variant === 'captionCode'}
         $forceBreak={forceBreak}
         $noWrap={noWrap}
+        $blur={blur}
         noWrap={noWrap}
         component={component}
         {...props}
@@ -162,6 +165,7 @@ const StyledMuiTypography = styled(MuiTypography)<{
   $code?: boolean
   $noWrap?: boolean
   $forceBreak?: boolean
+  $blur?: boolean
 }>`
   ${({ $noWrap, $code }) =>
     !$noWrap &&
@@ -173,5 +177,13 @@ const StyledMuiTypography = styled(MuiTypography)<{
     !!$forceBreak &&
     css`
       line-break: anywhere;
+    `}
+
+    ${({ $blur }) =>
+    $blur &&
+    css`
+      filter: blur(4px);
+      pointer-events: none;
+      user-select: none;
     `}
 `
